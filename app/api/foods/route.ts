@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readFoods, writeFoods } from "@/app/lib/foods";
+import { addFood, readFoods, removeFood } from "@/app/lib/foods";
 
 export async function GET() {
   console.log("[api/foods] GET");
@@ -15,10 +15,10 @@ export async function GET() {
 }
 
 function storageGuard() {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    console.error("[api/foods] KV env vars not set");
+  if (!process.env.POSTGRES_URL) {
+    console.error("[api/foods] POSTGRES_URL not set");
     return NextResponse.json(
-      { error: "Storage not configured — set KV_REST_API_URL and KV_REST_API_TOKEN in Vercel." },
+      { error: "Storage not configured — set POSTGRES_URL in Vercel." },
       { status: 503 }
     );
   }
@@ -37,32 +37,20 @@ export async function POST(req: Request) {
   const guard = storageGuard();
   if (guard) return guard;
 
-  let foods: string[];
   try {
-    foods = await readFoods();
+    const added = await addFood(name);
+    if (!added) {
+      console.log("[api/foods] POST duplicate:", name);
+      return NextResponse.json({ error: "Already in the list!" }, { status: 409 });
+    }
+    const updated = await readFoods();
+    console.log("[api/foods] POST success, list now:", updated.length, "items");
+    return NextResponse.json(updated, { status: 201 });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Storage read failed";
-    console.error("[api/foods] POST read error:", msg);
+    const msg = e instanceof Error ? e.message : "Storage operation failed";
+    console.error("[api/foods] POST error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
-  console.log("[api/foods] POST current list:", foods.length, "items");
-
-  if (foods.map((f) => f.toLowerCase()).includes(name.toLowerCase())) {
-    console.log("[api/foods] POST duplicate:", name);
-    return NextResponse.json({ error: "Already in the list!" }, { status: 409 });
-  }
-
-  const updated = [...foods, name];
-  try {
-    await writeFoods(updated);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "Storage write failed";
-    console.error("[api/foods] POST write error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
-  }
-
-  console.log("[api/foods] POST success, list now:", updated.length, "items");
-  return NextResponse.json(updated, { status: 201 });
 }
 
 export async function DELETE(req: Request) {
@@ -79,17 +67,12 @@ export async function DELETE(req: Request) {
     const guard = storageGuard();
     if (guard) return guard;
 
-    const foods = await readFoods();
-    console.log("[api/foods] DELETE current list:", foods.length, "items");
-
-    const updated = foods.filter((f) => f.toLowerCase() !== name.toLowerCase());
-
-    if (updated.length === foods.length) {
+    const removed = await removeFood(name);
+    if (!removed) {
       console.log("[api/foods] DELETE not found:", name);
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-
-    await writeFoods(updated);
+    const updated = await readFoods();
     console.log("[api/foods] DELETE success, list now:", updated.length, "items");
     return NextResponse.json(updated);
   } catch (e) {

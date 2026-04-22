@@ -143,6 +143,8 @@ export function FoodApp({ initialFoods }: { initialFoods: string[] }) {
 
       <footer className="text-center py-6 text-xs" style={{ color: "var(--text-secondary)" }}>
         Built with Next.js · Hosted on Vercel
+        <br />
+        Built by Cheezy
       </footer>
     </div>
   );
