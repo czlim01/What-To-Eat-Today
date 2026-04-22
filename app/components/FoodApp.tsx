@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Roller } from "./Roller";
 import { AddFood } from "./AddFood";
 import { FoodList } from "./FoodList";
@@ -10,6 +10,23 @@ export function FoodApp({ initialFoods }: { initialFoods: string[] }) {
   const [winner, setWinner] = useState<string | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [mutation, setMutation] = useState<"idle" | "adding" | "removing">("idle");
+
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      try {
+        const res = await fetch("/api/foods", { cache: "no-store" });
+        if (!res.ok) return;
+        const latest: string[] = await res.json();
+        if (alive) setFoods(latest);
+      } catch {
+        // Keep existing state if refresh fails.
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const handleAdd = async (name: string) => {
     if (mutation !== "idle") return;
