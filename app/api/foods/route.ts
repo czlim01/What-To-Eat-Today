@@ -15,10 +15,10 @@ export async function GET() {
 }
 
 function storageGuard() {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    console.error("[api/foods] BLOB_READ_WRITE_TOKEN not set");
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+    console.error("[api/foods] KV env vars not set");
     return NextResponse.json(
-      { error: "Storage not configured — set BLOB_READ_WRITE_TOKEN in Vercel." },
+      { error: "Storage not configured — set KV_REST_API_URL and KV_REST_API_TOKEN in Vercel." },
       { status: 503 }
     );
   }
