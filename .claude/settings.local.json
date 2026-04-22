@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(node -e \"const b = require\\('@vercel/blob'\\); console.log\\(Object.keys\\(b\\)\\)\")",
+      "Bash(node -e \"const {put} = require\\('@vercel/blob'\\); const t = put.toString\\(\\).slice\\(0,200\\); console.log\\(t\\)\")",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000/api/foods)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}
