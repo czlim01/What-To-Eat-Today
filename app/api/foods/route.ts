@@ -3,9 +3,15 @@ import { readFoods, writeFoods } from "@/app/lib/foods";
 
 export async function GET() {
   console.log("[api/foods] GET");
-  const foods = await readFoods();
-  console.log("[api/foods] GET returning", foods.length, "items");
-  return NextResponse.json(foods);
+  try {
+    const foods = await readFoods();
+    console.log("[api/foods] GET returning", foods.length, "items");
+    return NextResponse.json(foods);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Storage read failed";
+    console.error("[api/foods] GET read error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
 
 function storageGuard() {
@@ -31,7 +37,14 @@ export async function POST(req: Request) {
   const guard = storageGuard();
   if (guard) return guard;
 
-  const foods = await readFoods();
+  let foods: string[];
+  try {
+    foods = await readFoods();
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Storage read failed";
+    console.error("[api/foods] POST read error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
   console.log("[api/foods] POST current list:", foods.length, "items");
 
   if (foods.map((f) => f.toLowerCase()).includes(name.toLowerCase())) {

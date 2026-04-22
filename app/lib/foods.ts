@@ -2,40 +2,30 @@ import { put, head } from "@vercel/blob";
 
 const BLOB_FILENAME = "what-to-eat-foods.json";
 
-export const DEFAULT_FOODS = [
-  "Pizza", "Sushi", "Burger", "Tacos", "Pasta",
-  "Fried Chicken", "Ramen", "Salad", "Steak", "Dim Sum",
-  "Nasi Lemak", "Char Kway Teow", "Laksa", "Satay", "Prata",
-];
-
 export async function readFoods(): Promise<string[]> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    console.log("[foods] No BLOB_READ_WRITE_TOKEN — returning defaults");
-    return DEFAULT_FOODS;
+    throw new Error("BLOB_READ_WRITE_TOKEN is not set");
   }
-  try {
-    console.log("[foods] head()", BLOB_FILENAME);
-    const blob = await head(BLOB_FILENAME);
-    console.log("[foods] blob url:", blob.url, "size:", blob.size);
+  console.log("[foods] head()", BLOB_FILENAME);
+  const blob = await head(BLOB_FILENAME);
+  console.log("[foods] blob url:", blob.url, "size:", blob.size);
 
-    const response = await fetch(blob.downloadUrl);
-    console.log("[foods] fetch status:", response.status);
+  const response = await fetch(blob.downloadUrl);
+  console.log("[foods] fetch status:", response.status);
 
-    if (!response.ok) {
-      console.log("[foods] unexpected statusCode, returning defaults");
-      return DEFAULT_FOODS;
-    }
-
-    const text = await response.text();
-    console.log("[foods] raw text:", text.slice(0, 200));
-
-    const data = JSON.parse(text);
-    console.log("[foods] parsed items:", Array.isArray(data) ? data.length : "not array");
-    return Array.isArray(data) ? data : DEFAULT_FOODS;
-  } catch (e) {
-    console.error("[foods] readFoods error:", e instanceof Error ? e.message : e);
-    return DEFAULT_FOODS;
+  if (!response.ok) {
+    throw new Error(`Blob read failed with status ${response.status}`);
   }
+
+  const text = await response.text();
+  console.log("[foods] raw text:", text.slice(0, 200));
+
+  const data = JSON.parse(text);
+  console.log("[foods] parsed items:", Array.isArray(data) ? data.length : "not array");
+  if (!Array.isArray(data)) {
+    throw new Error("Blob data is not an array");
+  }
+  return data;
 }
 
 export async function writeFoods(foods: string[]): Promise<void> {
