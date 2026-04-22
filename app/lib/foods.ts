@@ -11,7 +11,8 @@ export async function readFoods(): Promise<string[]> {
   const blob = await head(BLOB_FILENAME);
   console.log("[foods] blob url:", blob.url, "size:", blob.size);
 
-  const freshUrl = `${blob.url}${blob.url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+  const baseReadUrl = blob.downloadUrl || blob.url;
+  const freshUrl = `${baseReadUrl}${baseReadUrl.includes("?") ? "&" : "?"}t=${Date.now()}`;
   const response = await fetch(freshUrl, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -42,6 +43,7 @@ export async function writeFoods(foods: string[]): Promise<void> {
       access: "private",
       addRandomSuffix: false,
       allowOverwrite: true,
+      cacheControlMaxAge: 0,
     });
     console.log("[foods] write ok, url:", result.url);
   } catch (e) {
