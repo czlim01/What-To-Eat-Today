@@ -53,36 +53,35 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const body = await req.json();
-  const name = (body.name ?? "").toString().trim();
-  console.log("[api/foods] DELETE name:", name);
-
-  if (!name) {
-    console.log("[api/foods] DELETE invalid name");
-    return NextResponse.json({ error: "Invalid food name" }, { status: 400 });
-  }
-
-  const guard = storageGuard();
-  if (guard) return guard;
-
-  const foods = await readFoods();
-  console.log("[api/foods] DELETE current list:", foods.length, "items");
-
-  const updated = foods.filter((f) => f.toLowerCase() !== name.toLowerCase());
-
-  if (updated.length === foods.length) {
-    console.log("[api/foods] DELETE not found:", name);
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
   try {
+    const body = await req.json();
+    const name = (body.name ?? "").toString().trim();
+    console.log("[api/foods] DELETE name:", name);
+
+    if (!name) {
+      console.log("[api/foods] DELETE invalid name");
+      return NextResponse.json({ error: "Invalid food name" }, { status: 400 });
+    }
+
+    const guard = storageGuard();
+    if (guard) return guard;
+
+    const foods = await readFoods();
+    console.log("[api/foods] DELETE current list:", foods.length, "items");
+
+    const updated = foods.filter((f) => f.toLowerCase() !== name.toLowerCase());
+
+    if (updated.length === foods.length) {
+      console.log("[api/foods] DELETE not found:", name);
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     await writeFoods(updated);
+    console.log("[api/foods] DELETE success, list now:", updated.length, "items");
+    return NextResponse.json(updated);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Storage write failed";
-    console.error("[api/foods] DELETE write error:", msg);
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[api/foods] DELETE unhandled error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
-
-  console.log("[api/foods] DELETE success, list now:", updated.length, "items");
-  return NextResponse.json(updated);
 }

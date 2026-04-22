@@ -44,6 +44,7 @@ export async function writeFoods(foods: string[]): Promise<void> {
     const result = await put(BLOB_FILENAME, JSON.stringify(foods), {
       access: "private",
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
     console.log("[foods] write ok, url:", result.url);
   } catch (e) {
