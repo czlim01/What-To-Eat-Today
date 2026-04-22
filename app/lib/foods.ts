@@ -3,14 +3,19 @@ import { put, head } from "@vercel/blob";
 const BLOB_FILENAME = "what-to-eat-foods.json";
 
 export async function readFoods(): Promise<string[]> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) {
     throw new Error("BLOB_READ_WRITE_TOKEN is not set");
   }
   console.log("[foods] head()", BLOB_FILENAME);
   const blob = await head(BLOB_FILENAME);
   console.log("[foods] blob url:", blob.url, "size:", blob.size);
 
-  const response = await fetch(blob.downloadUrl);
+  const response = await fetch(blob.url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   console.log("[foods] fetch status:", response.status);
 
   if (!response.ok) {
