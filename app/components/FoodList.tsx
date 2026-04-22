@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 const FOOD_EMOJIS: Record<string, string> = {
   pizza: "🍕", sushi: "🍣", burger: "🍔", taco: "🌮", tacos: "🌮",
   pasta: "🍝", ramen: "🍜", salad: "🥗", steak: "🥩", chicken: "🍗",
@@ -17,14 +19,31 @@ function getEmoji(name: string): string {
   return "🍽️";
 }
 
-export function FoodList({ foods }: { foods: string[] }) {
+export function FoodList({
+  foods,
+  onRemove,
+}: {
+  foods: string[];
+  onRemove: (name: string) => Promise<void>;
+}) {
+  const [removing, setRemoving] = useState<string | null>(null);
+
+  const handleRemove = async (food: string) => {
+    setRemoving(food);
+    await onRemove(food);
+    setRemoving(null);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>
           All options
         </h3>
-        <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--bg)", color: "var(--text-secondary)" }}>
+        <span
+          className="text-xs px-2 py-0.5 rounded-full"
+          style={{ background: "var(--bg)", color: "var(--text-secondary)" }}
+        >
           {foods.length} items
         </span>
       </div>
@@ -33,15 +52,37 @@ export function FoodList({ foods }: { foods: string[] }) {
         {foods.map((food) => (
           <div
             key={food}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm"
+            className="flex items-center gap-1.5 pl-3 pr-1 py-1.5 rounded-full text-sm group"
             style={{
               background: "var(--bg)",
               border: "1px solid var(--border)",
               color: "var(--text-primary)",
+              opacity: removing === food ? 0.4 : 1,
+              transition: "opacity 0.15s",
             }}
           >
             <span>{getEmoji(food)}</span>
             <span>{food}</span>
+            <button
+              onClick={() => handleRemove(food)}
+              disabled={removing === food}
+              title={`Remove ${food}`}
+              className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-xs transition-all"
+              style={{
+                color: "var(--text-secondary)",
+                background: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(204,120,92,0.15)";
+                (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
+              }}
+            >
+              ×
+            </button>
           </div>
         ))}
 

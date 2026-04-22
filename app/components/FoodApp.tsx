@@ -24,6 +24,17 @@ export function FoodApp({ initialFoods }: { initialFoods: string[] }) {
     setFoods(updated);
   };
 
+  const handleRemove = async (name: string) => {
+    const res = await fetch("/api/foods", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) return;
+    const updated: string[] = await res.json();
+    setFoods(updated);
+  };
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
       {/* Header */}
@@ -105,7 +116,7 @@ export function FoodApp({ initialFoods }: { initialFoods: string[] }) {
           className="rounded-2xl p-6 shadow-sm"
           style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         >
-          <FoodList foods={foods} />
+          <FoodList foods={foods} onRemove={handleRemove} />
         </div>
       </main>
 
