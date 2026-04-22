@@ -11,10 +11,12 @@ export async function readFoods(): Promise<string[]> {
   const blob = await head(BLOB_FILENAME);
   console.log("[foods] blob url:", blob.url, "size:", blob.size);
 
-  const response = await fetch(blob.url, {
+  const freshUrl = `${blob.url}${blob.url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+  const response = await fetch(freshUrl, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    cache: "no-store",
   });
   console.log("[foods] fetch status:", response.status);
 
