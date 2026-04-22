@@ -30,7 +30,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Already in the list!" }, { status: 409 });
 
   const updated = [...foods, name];
-  await writeFoods(updated);
+  try {
+    await writeFoods(updated);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Storage write failed";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
   return NextResponse.json(updated, { status: 201 });
 }
 
@@ -50,6 +55,11 @@ export async function DELETE(req: Request) {
   if (updated.length === foods.length)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await writeFoods(updated);
+  try {
+    await writeFoods(updated);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Storage write failed";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
   return NextResponse.json(updated);
 }

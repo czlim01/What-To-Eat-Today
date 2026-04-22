@@ -17,8 +17,10 @@ export function FoodApp({ initialFoods }: { initialFoods: string[] }) {
       body: JSON.stringify({ name }),
     });
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error ?? "Failed to add");
+      const text = await res.text();
+      let msg = "Failed to add";
+      try { msg = JSON.parse(text).error ?? msg; } catch { /* empty body */ }
+      throw new Error(msg);
     }
     const updated: string[] = await res.json();
     setFoods(updated);

@@ -7,7 +7,17 @@
       "Bash(node -e \"const {put} = require\\('@vercel/blob'\\); const t = put.toString\\(\\).slice\\(0,200\\); console.log\\(t\\)\")",
       "Bash(npm run *)",
       "Bash(curl -s http://localhost:3000/api/foods)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node -e \"require\\('tailwindcss'\\); console.log\\('tailwindcss ok'\\)\")",
+      "Bash(node -e \"require\\('autoprefixer'\\); console.log\\('autoprefixer ok'\\)\")",
+      "Bash(npx tailwindcss *)",
+      "Read(//tmp/**)",
+      "Bash(curl -s \"http://localhost:57234/_next/static/css/app/layout.css?v=1776868960597\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/tailwindcss/package.json'\\).version\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(curl -s \"http://localhost:57234/_next/static/css/app/layout.css\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{content_type}\" \"http://localhost:62974/_next/static/css/app/layout.css\")",
+      "Bash(curl -s \"http://localhost:62974/_next/static/css/app/layout.css\")"
     ]
   }
 }
