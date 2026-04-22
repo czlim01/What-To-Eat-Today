@@ -9,37 +9,50 @@ export function FoodApp({ initialFoods }: { initialFoods: string[] }) {
   const [foods, setFoods] = useState<string[]>(initialFoods);
   const [winner, setWinner] = useState<string | null>(null);
   const [spinning, setSpinning] = useState(false);
+  const [mutation, setMutation] = useState<"idle" | "adding" | "removing">("idle");
 
   const handleAdd = async (name: string) => {
-    const res = await fetch("/api/foods", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      let msg = "Failed to add";
-      try { msg = JSON.parse(text).error ?? msg; } catch { /* empty body */ }
-      throw new Error(msg);
+    if (mutation !== "idle") return;
+    setMutation("adding");
+    try {
+      const res = await fetch("/api/foods", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        let msg = "Failed to add";
+        try { msg = JSON.parse(text).error ?? msg; } catch { /* empty body */ }
+        throw new Error(msg);
+      }
+      const updated: string[] = await res.json();
+      setFoods(updated);
+    } finally {
+      setMutation("idle");
     }
-    const updated: string[] = await res.json();
-    setFoods(updated);
   };
 
   const handleRemove = async (name: string) => {
+    if (mutation !== "idle") return;
+    setMutation("removing");
     // Optimistic update — remove immediately so the UI responds instantly
     const previous = foods;
     setFoods((f) => f.filter((item) => item !== name));
 
-    const res = await fetch("/api/foods", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
+    try {
+      const res = await fetch("/api/foods", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
 
-    if (!res.ok && res.status !== 503) {
-      // Revert on real errors; 503 = no storage configured (dev/local), keep removal
-      setFoods(previous);
+      if (!res.ok && res.status !== 503) {
+        // Revert on real errors; 503 = no storage configured (dev/local), keep removal
+        setFoods(previous);
+      }
+    } finally {
+      setMutation("idle");
     }
   };
 
@@ -116,7 +129,7 @@ export function FoodApp({ initialFoods }: { initialFoods: string[] }) {
           <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
             Everyone can contribute — your addition will appear for all visitors.
           </p>
-          <AddFood onAdd={handleAdd} />
+          <AddFood onAdd={handleAdd} disabled={mutation !== "idle"} />
         </div>
 
         {/* Food list */}
@@ -124,7 +137,7 @@ export function FoodApp({ initialFoods }: { initialFoods: string[] }) {
           className="rounded-2xl p-6 shadow-sm"
           style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         >
-          <FoodList foods={foods} onRemove={handleRemove} />
+          <FoodList foods={foods} onRemove={handleRemove} disabled={mutation !== "idle"} />
         </div>
       </main>
 

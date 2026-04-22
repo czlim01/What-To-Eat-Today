@@ -20,9 +20,11 @@ function getEmoji(name: string): string {
 export function FoodList({
   foods,
   onRemove,
+  disabled = false,
 }: {
   foods: string[];
   onRemove: (name: string) => void | Promise<void>;
+  disabled?: boolean;
 }) {
   return (
     <div>
@@ -53,8 +55,9 @@ export function FoodList({
             <span>{food}</span>
             <button
               onClick={() => onRemove(food)}
+              disabled={disabled}
               title={`Remove ${food}`}
-              className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-xs transition-all"
+              className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 color: "var(--text-secondary)",
                 background: "transparent",

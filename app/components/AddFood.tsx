@@ -2,7 +2,13 @@
 
 import { useState, useRef } from "react";
 
-export function AddFood({ onAdd }: { onAdd: (name: string) => Promise<void> }) {
+export function AddFood({
+  onAdd,
+  disabled = false,
+}: {
+  onAdd: (name: string) => Promise<void>;
+  disabled?: boolean;
+}) {
   const [value, setValue] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -11,7 +17,7 @@ export function AddFood({ onAdd }: { onAdd: (name: string) => Promise<void> }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = value.trim();
-    if (!name) return;
+    if (!name || disabled) return;
 
     setStatus("loading");
     setErrorMsg("");
@@ -48,11 +54,11 @@ export function AddFood({ onAdd }: { onAdd: (name: string) => Promise<void> }) {
           }}
           onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
           onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-          disabled={status === "loading"}
+          disabled={status === "loading" || disabled}
         />
         <button
           type="submit"
-          disabled={!value.trim() || status === "loading"}
+          disabled={!value.trim() || status === "loading" || disabled}
           className="px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
           style={{
             background: "var(--accent)",
