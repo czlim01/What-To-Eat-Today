@@ -1,4 +1,4 @@
-import { put, head, get } from "@vercel/blob";
+import { put, head } from "@vercel/blob";
 
 const BLOB_FILENAME = "what-to-eat-foods.json";
 
@@ -18,15 +18,15 @@ export async function readFoods(): Promise<string[]> {
     const blob = await head(BLOB_FILENAME);
     console.log("[foods] blob url:", blob.url, "size:", blob.size);
 
-    const result = await get(blob.url, { access: "private" });
-    console.log("[foods] get statusCode:", result?.statusCode);
+    const response = await fetch(blob.downloadUrl);
+    console.log("[foods] fetch status:", response.status);
 
-    if (!result || result.statusCode !== 200) {
+    if (!response.ok) {
       console.log("[foods] unexpected statusCode, returning defaults");
       return DEFAULT_FOODS;
     }
 
-    const text = await new Response(result.stream).text();
+    const text = await response.text();
     console.log("[foods] raw text:", text.slice(0, 200));
 
     const data = JSON.parse(text);

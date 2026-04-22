@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 const FOOD_EMOJIS: Record<string, string> = {
   pizza: "🍕", sushi: "🍣", burger: "🍔", taco: "🌮", tacos: "🌮",
   pasta: "🍝", ramen: "🍜", salad: "🥗", steak: "🥩", chicken: "🍗",
@@ -24,16 +22,8 @@ export function FoodList({
   onRemove,
 }: {
   foods: string[];
-  onRemove: (name: string) => Promise<void>;
+  onRemove: (name: string) => void | Promise<void>;
 }) {
-  const [removing, setRemoving] = useState<string | null>(null);
-
-  const handleRemove = async (food: string) => {
-    setRemoving(food);
-    await onRemove(food);
-    setRemoving(null);
-  };
-
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -57,15 +47,12 @@ export function FoodList({
               background: "var(--bg)",
               border: "1px solid var(--border)",
               color: "var(--text-primary)",
-              opacity: removing === food ? 0.4 : 1,
-              transition: "opacity 0.15s",
             }}
           >
             <span>{getEmoji(food)}</span>
             <span>{food}</span>
             <button
-              onClick={() => handleRemove(food)}
-              disabled={removing === food}
+              onClick={() => onRemove(food)}
               title={`Remove ${food}`}
               className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-xs transition-all"
               style={{
