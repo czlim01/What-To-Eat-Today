@@ -25,14 +25,20 @@ export function FoodApp({ initialFoods }: { initialFoods: string[] }) {
   };
 
   const handleRemove = async (name: string) => {
+    // Optimistic update — remove immediately so the UI responds instantly
+    const previous = foods;
+    setFoods((f) => f.filter((item) => item !== name));
+
     const res = await fetch("/api/foods", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),
     });
-    if (!res.ok) return;
-    const updated: string[] = await res.json();
-    setFoods(updated);
+
+    if (!res.ok && res.status !== 503) {
+      // Revert on real errors; 503 = no storage configured (dev/local), keep removal
+      setFoods(previous);
+    }
   };
 
   return (
